@@ -1,0 +1,922 @@
+schema_version: 1.0.0
+name: Workflow_Base_on_Communication
+id: 7568378173588668462
+description: "与用户对话后，进入该工作流处理对话，提取关键词，并根据关键词使用相对应的工作流进行专项服务"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 185.7252499315655
+        y: -102.53903484754846
+      parameters:
+        node_outputs:
+            input:
+                type: string
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 3712.1794320348586
+        y: -52.69999999999996
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: string
+                value:
+                    path: reasoning_content
+                    ref_node: "103093"
+        terminatePlan: returnVariables
+    - id: "103093"
+      type: llm
+      title: 对话以及文字处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 692.9404107976377
+        y: -141.53903484754846
+      parameters:
+        fcParam:
+            knowledgeFCParam:
+                global_setting:
+                    auto: false
+                    min_score: 0.5
+                    no_recall_reply_customize_prompt: 抱歉，您的问题超出了我的知识范围，并且无法在当前阶段回答
+                    no_recall_reply_mode: 0
+                    search_mode: 0
+                    show_source: false
+                    show_source_mode: 0
+                    top_k: 3
+                    use_nl2_sql: true
+                    use_rerank: true
+                    use_rewrite: true
+                knowledgeList:
+                    - id: "7572179804879880192"
+                      knowledgeType: 0
+                      name: 'keywords_comparision '
+        fcParamVar:
+            knowledgeFCParam:
+                knowledgeList: []
+        llmParam:
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: maxCompletionTokens
+              input:
+                type: integer
+                value: "0"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.6·深度思考·250715
+            - name: modelType
+              input:
+                type: integer
+                value: "1753444193"
+            - name: generationDiversity
+              input:
+                type: string
+                value: precise
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    参考{#LibraryBlock id="7572179804879880192" uuid="fcHG2CsDJLinLzoew98PM" type="text"#}keywords_comparision {#/LibraryBlock#}收集输入中的关键词：
+                    例子：“记账”“预算”“消费记录”“记账”“学理财”“基金知识”“债券入门”学理财”“投资”“理财建议”“低风险产品”等
+                    输出关键词
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: input
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "177563"
+      type: condition
+      title: 工作流选择
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg
+      description: "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支"
+      position:
+        x: 1200.15557166371
+        y: -167.53903484754846
+      parameters:
+        branches:
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: output
+                                ref_node: "103093"
+                      operator: 7
+                      right:
+                        input:
+                            type: string
+                            value: "记账，周记，账目，账单"
+                logic: 2
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: output
+                                ref_node: "103093"
+                      operator: 7
+                      right:
+                        input:
+                            type: string
+                            value: "指导，教程，概念"
+                logic: 2
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: output
+                                ref_node: "103093"
+                      operator: 7
+                      right:
+                        input:
+                            type: string
+                            value: "建议，产品，历史涨幅"
+                logic: 2
+    - id: "101310"
+      type: llm
+      title: 跳过
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2385.677809988517
+        y: 258.9015691446041
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: temperature
+              input:
+                type: float
+                value: "0.8"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: prefixCache
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelType
+              input:
+                type: integer
+                value: "1737521813"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.5·Pro·32k
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    引导用户给出需求
+                    你没明确需求，我可以帮你：
+                    1. 记账/做预算（管理日常消费）。
+                    2. 学理财知识（基金、债券入门）。
+                    3. 给低风险投资建议（货币基金、纯债基金配置）。
+                    请告诉我你想选哪个～
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: reasoning_content
+                    ref_node: "103093"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "165407"
+      type: llm
+      title: 记账
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2988.1586542575483
+        y: -741.6566557636754
+      parameters:
+        fcParam:
+            knowledgeFCParam:
+                global_setting:
+                    auto: false
+                    min_score: 0.5
+                    no_recall_reply_customize_prompt: 抱歉，您的问题超出了我的知识范围，并且无法在当前阶段回答
+                    no_recall_reply_mode: 0
+                    search_mode: 0
+                    show_source: false
+                    show_source_mode: 0
+                    top_k: 3
+                    use_nl2_sql: true
+                    use_rerank: true
+                    use_rewrite: true
+                knowledgeList:
+                    - id: "7568420991048040502"
+                      knowledgeType: 0
+                      name: 用户账目管理
+                      volcano_dataset_service_info:
+                        id: ""
+                        name: ""
+            llmNodeUID: ""
+            spaceID: "7568105309382819876"
+            workflowVersion: ""
+        fcParamVar:
+            knowledgeFCParam:
+                knowledgeList: []
+        llmParam:
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: maxCompletionTokens
+              input:
+                type: integer
+                value: "0"
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.6·深度思考·250715
+            - name: modelType
+              input:
+                type: integer
+                value: "1753444193"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你的任务是处理用户记账需求：
+                    1. 若输入是文字，直接提取“消费类型、金额、日期”（如“今天吃饭花了35元”→类型“餐饮”，金额“35”，日期“当前日期”）。
+                    2. 若输入是图片识别结果，从文字中提取“消费类型、金额、日期”（如图片含“2025-11-03 餐饮 40元”→类型“餐饮”，金额“40”，日期“2025-11-03”）。
+                    3.将收集的数据放{实现长期储存
+                    4. 生成日报（整合近期消费，用趣味话术呈现），并分析消费结构给出建议。
+                    5.类似的方法生成周报
+                    6.类似的方法生成月报
+                    6. 分析消费结构，对比所在城市学生平均水平，给出3条个性化建议（超预算时提示“减少非必要外卖”）。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "103093"
+            - name: response_for_model
+              input:
+                type: string
+                value:
+                    path: response_for_model
+                    ref_node: "165186"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "124754"
+      type: llm
+      title: 教程
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2871.726797816503
+        y: -330.8390348475485
+      parameters:
+        fcParam:
+            llmNodeUID: "7569410133084684330"
+            pluginFCParam:
+                pluginList:
+                    - api_id: "7384102442251698215"
+                      api_name: DRV_RG
+                      is_draft: false
+                      plugin_id: "7384102442251681831"
+                      plugin_version: ""
+            spaceID: "7568105309382819876"
+            workflowVersion: ""
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: temperature
+              input:
+                type: float
+                value: "0.8"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "1024"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: prefixCache
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: DeepSeek-V3
+            - name: modelType
+              input:
+                type: integer
+                value: "1738675210"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你的任务是传递理财入门知识：
+                    1. 输出{{input}}
+                    2. 利用{#LibraryBlock id="7384102442251681831" uuid="074VNJvfvBRA_ubFmphdX" type="plugin" apiId="7384102442251698215"#}DRV_RG{#/LibraryBlock#}创建实际金融学习场景如“小明用100元买基金，净值1.0时买了100份，净值涨到1.05时卖出，赚了5元”）。
+                    3. 设计模拟场景让用户互动（如“如果你有500元，会选货币基金还是短债基金？”）。
+                    4. 所有术语必须生活化，避免专业表达。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "183182"
+            - name: reasoning_context
+              input:
+                value:
+                    path: reasoning_content
+                    ref_node: "103093"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "149968"
+      type: llm
+      title: 投资建议
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2429.953306507465
+        y: 10.185715919146872
+      parameters:
+        fcParam:
+            llmNodeUID: "7568424579024470042"
+            pluginFCParam:
+                pluginList:
+                    - api_id: "7384102290598395923"
+                      api_name: DRV_GEIA
+                      is_draft: false
+                      plugin_id: "7384102290598379539"
+                      plugin_version: ""
+                    - api_id: "7384110842582663204"
+                      api_name: DRV_SPO
+                      is_draft: false
+                      plugin_id: "7384110763692310547"
+                      plugin_version: ""
+            spaceID: "7568105309382819876"
+            workflowVersion: ""
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: temperature
+              input:
+                type: float
+                value: "0.8"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "2200"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: DeepSeek-R1/250528
+            - name: modelType
+              input:
+                type: integer
+                value: "1748588801"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你的任务是提供低风险投资建议：
+                    1.首先通过问答方式获取用户预算
+                    2. 仅推荐货币基金、纯债基金、国债逆回购等低风险产品。
+                    3. 利用{#LibraryBlock id="7384102290598379539" uuid="wc-3ukyRpkMF7qcscO9BE" type="plugin" apiId="7384102290598395923"#}DRV_GEIA{#/LibraryBlock#}{#LibraryBlock id="7384110763692310547" uuid="h368-9o7jJmZf0dvNVobx" type="plugin" apiId="7384110842582663204"#}DRV_SPO{#/LibraryBlock#}整合支付宝/微信理财通的产品数据（历史收益率、申赎规则），生成详细分析报告。
+                    4. 给出“一键配置”建议（如“500元可配300元货币基金+200元短债基金，兼顾流动性与收益”）。
+                    5. 若用户问高风险产品（股票/股票型基金），需合理“劝退”并提供学习方案（先学基础+模拟账户实操）。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "103093"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "165186"
+      type: plugin
+      title: imgUnderstand
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "回答用户关于图像的问题"
+      position:
+        x: 2479.3203616362175
+        y: -930.9999199452587
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7407644410588151819"
+            - name: apiName
+              input:
+                type: string
+                value: "imgUnderstand"
+            - name: pluginID
+              input:
+                type: string
+                value: "7379227414322217010"
+            - name: pluginName
+              input:
+                type: string
+                value: "图片理解"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        node_outputs:
+            code:
+                type: float
+                value: null
+            content_type:
+                type: integer
+                value: null
+            msg:
+                type: string
+                value: null
+            response_for_model:
+                type: string
+                value: null
+                description: VLM's answer about this image
+            type_for_model:
+                type: integer
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "188442"
+      type: condition
+      title: 选择器
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg
+      description: "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支"
+      position:
+        x: 1947.254838136623
+        y: -758.985767670532
+      parameters:
+        branches:
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: output
+                                ref_node: "103093"
+                      operator: 7
+                      right:
+                        input:
+                            type: string
+                            value: "账单"
+                logic: 2
+    - id: "183182"
+      type: llm
+      title: 搜索
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1970.8493133543109
+        y: -215.99999999999997
+      parameters:
+        fcParam:
+            llmNodeUID: "7569410133084700714"
+            pluginFCParam:
+                pluginList:
+                    - api_id: "7384102442251698215"
+                      api_name: DRV_RG
+                      is_draft: false
+                      plugin_id: "7384102442251681831"
+                      plugin_version: ""
+                    - api_id: "7372463719307296795"
+                      api_name: search
+                      is_draft: false
+                      plugin_id: "7372463719307264027"
+                      plugin_version: ""
+            spaceID: "7568105309382819876"
+            workflowVersion: ""
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1737521813"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.5·Pro·32k
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.8"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: prefixCache
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    1.你的任务是根据关键词进行联网搜索：
+                    利用{#LibraryBlock id="7384102442251681831" uuid="wWFHWS6bp1F8_1S0OTfQZ" type="plugin" apiId="7384102442251698215"#}DRV_RG{#/LibraryBlock#}和{#LibraryBlock id="7372463719307264027" uuid="YOtNa8JKmxNExs3jiXg59" type="plugin" apiId="7372463719307296795"#}search{#/LibraryBlock#}搜索输入中的金融关键词概念
+                    将搜索到的所有相关网页及其文字进行综合分析，提取较严谨，官方的内容
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "103093"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+edges:
+    - source_node: "100001"
+      target_node: "103093"
+    - source_node: "101310"
+      target_node: "900001"
+    - source_node: "165407"
+      target_node: "900001"
+    - source_node: "124754"
+      target_node: "900001"
+    - source_node: "149968"
+      target_node: "900001"
+    - source_node: "103093"
+      target_node: "177563"
+    - source_node: "177563"
+      target_node: "101310"
+      source_port: "false"
+    - source_node: "177563"
+      target_node: "149968"
+      source_port: true_2
+    - source_node: "177563"
+      target_node: "183182"
+      source_port: true_1
+    - source_node: "177563"
+      target_node: "188442"
+      source_port: "true"
+    - source_node: "165186"
+      target_node: "165407"
+    - source_node: "188442"
+      target_node: "165407"
+      source_port: "false"
+    - source_node: "183182"
+      target_node: "124754"
+    - source_node: "188442"
+      target_node: "165186"
+      source_port: "true"

@@ -1,0 +1,11 @@
+type: Workflow
+version: 1.0.0
+main:
+    id: 7568378173588668462
+    name: Workflow_Base_on_Communication
+    desc: 与用户对话后，进入该工作流处理对话，提取关键词，并根据关键词使用相对应的工作流进行专项服务
+    icon: plugin_icon/workflow.png
+    version: ""
+    flowMode: 0
+    commitId: ""
+sub: []
